@@ -223,6 +223,6 @@ class Ui_MainWindow(object):
         self.groupBox_5.setTitle(_translate("MainWindow", "5. VGG16 TEST"))
         self.pushButton_16.setText(_translate("MainWindow", "1. Show Train Images"))
         self.pushButton_17.setText(_translate("MainWindow", "2. Show HyperParameter"))
-        self.pushButton_18.setText(_translate("MainWindow", "3. Show Model Shortcut"))
+        self.pushButton_18.setText(_translate("MainWindow", "3. Show Model Structure"))
         self.pushButton_19.setText(_translate("MainWindow", "4. Show Accuracy"))
         self.pushButton_20.setText(_translate("MainWindow", "5. Test"))

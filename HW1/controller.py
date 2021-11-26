@@ -22,13 +22,16 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setup_control()
-        self.value = 0
-        self.img = 0
-        self.h = 0
+
+        self.value = 0 # for scrollbar alpha blend 
+        self.img = 0 # record opencv imread image
+
+        # for image transform
+        self.h = 0 
         self.w = 0
         self.center = (0,0)
-        self.label = np.array(["airplane","automobile","bird","cat","deer","dog","frog","horse","ship","truck"])
-        self.count = 0
+        
+        # load ciphar10 dataset
         import os
         from keras import backend
         from keras.datasets.cifar import load_batch
@@ -55,9 +58,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.x_test = self.x_test.astype(self.x_train.dtype)
         self.y_test = self.y_test.astype(self.y_train.dtype)
 
+        self.label = np.array(["plane","car","bird","cat","deer","dog","frog","horse","ship","truck"])
+        self.count = 0 # for ciphar10 image index
+
+        # model hyperparameter
         self.batch_size = 128
-        self.learning_rate = 0.1
-        self.optimizer = 'SGD'
+        self.learning_rate = 0.001
+        self.optimizer = 'Adam'
         self.model = tf.keras.models.load_model('./model/MyVGG16.h5')
         
 
@@ -288,76 +295,124 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         for i in range(0,3):
             for j in range(1,4):
                 p1 = fig.add_subplot(3,3,i*3+j)
-                imgplot = plt.imshow(self.x_train[self.count])
+                plt.imshow(self.x_train[self.count])
                 p1.set_title(self.label[self.y_train[self.count].astype(int)][0])
                 self.count = self.count + 1
                 plt.axis('off')
         plt.show()
     def ShowHyperparameter(self):
-        print("hyperparameters:\n")
-        print("batch size: %d\n"%(self.batch_size))
-        print("learning rate: %d\n"%(self.learning_rate))
-        print("optimizer: %s\n"%(self.optimizer))
+        print("hyperparameters:")
+        print("batch size: %d"%(self.batch_size))
+        print("learning rate: %.3f"%(self.learning_rate))
+        print("optimizer: %s"%(self.optimizer))
     def ShowModelStructure(self):
         self.model.summary()
     def Train(self):
-        model = tf.keras.Sequential(name="MyVGG16")
 
-        model.add(Conv2D(32,(3,3),activation='relu',padding='same',input_shape=(32,32,3)))
-        model.add(Conv2D(32,(3,3),activation='relu',padding='same'))
-        model.add(MaxPooling2D((2,2)))
-
-        model.add(Conv2D(64,(3,3),activation='relu',padding='same'))
-        model.add(Conv2D(64,(3,3),activation='relu',padding='same'))
-        model.add(MaxPooling2D((2,2)))
-
-        model.add(Flatten())
-        model.add(Dense(512,activation='relu'))
-        model.add(Dense(10,activation='softmax'))
-
-        model.summary()
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),loss=["sparse_categorical_crossentropy" ],metrics=['accuracy'])
-
-
-        history = model.fit(self.x_train,self.y_train,epochs = 1,batch_size=128,validation_data = (self.x_test,self.y_test))
-
-        score = model.evaluate(self.x_test,self.y_test,batch_size=128)
-        print("訓練分數:",score)
-
-        result = model.predict(self.x_test,batch_size=128)
-        print("原始直:",np.squeeze(self.y_test[:20],axis=1))
-        print("預測值:",np.argmax(result[:20],axis=1))
-
-        plt.plot(history.history['accuracy'], label='accuracy')
-        plt.plot(history.history['val_accuracy'], label='val_accuracy')
-        plt.plot(history.history['loss'], label='loss')
-        plt.plot(history.history['val_loss'], label='val_loss')
-        plt.xlabel('Epoch')
-        plt.ylabel('Accuracy')
-        plt.ylim([0,2])
-        plt.legend(loc='lower right')
+        plt.figure()
+        img = cv.imread("Figure_1.png")
+        plt.imshow(img)
+        plt.axis('off')
         plt.show()
-        import os
-        savedir = "./model"
-        model_name = "MyVGG16.h5"
-        if not os.path.isdir(savedir):
-            os.makedirs(savedir)
-        model_path = os.path.join(savedir, model_name)
-        model.save(model_path)
+        
+        # # build model structure
+        # model = tf.keras.Sequential(name="MyVGG16")
+
+        # model.add(Conv2D(32,(3,3),activation='relu',padding='same',input_shape=(32,32,3)))
+        # model.add(Conv2D(32,(3,3),activation='relu',padding='same'))
+        # model.add(MaxPooling2D((2,2)))
+
+        # model.add(Conv2D(64,(3,3),activation='relu',padding='same'))
+        # model.add(Conv2D(64,(3,3),activation='relu',padding='same'))
+        # model.add(MaxPooling2D((2,2)))
+
+        # model.add(Conv2D(128,(3,3),activation='relu',padding='same'))
+        # model.add(Conv2D(128,(3,3),activation='relu',padding='same'))
+        # model.add(Conv2D(128,(3,3),activation='relu',padding='same'))
+        # model.add(MaxPooling2D((2,2)))
+
+        # model.add(Conv2D(256,(3,3),activation='relu',padding='same'))
+        # model.add(Conv2D(256,(3,3),activation='relu',padding='same'))
+        # model.add(Conv2D(256,(3,3),activation='relu',padding='same'))
+        # model.add(MaxPooling2D((2,2)))
+
+        # model.add(Conv2D(256,(3,3),activation='relu',padding='same'))
+        # model.add(Conv2D(256,(3,3),activation='relu',padding='same'))
+        # model.add(Conv2D(256,(3,3),activation='relu',padding='same'))
+        # model.add(MaxPooling2D((2,2)))
+
+        # model.add(Flatten())
+
+        # model.add(Dense(512,activation='relu'))
+        # model.add(Dense(512,activation='relu'))
+        # model.add(Dense(10,activation='softmax'))
+
+        # model.summary()
+        # model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),loss=["sparse_categorical_crossentropy" ]
+        #                 ,metrics=['accuracy'])
+
+
+        # history = model.fit(self.x_train,self.y_train,epochs = 25,batch_size=128,validation_data = (self.x_test,self.y_test))
+
+        # score = model.evaluate(self.x_test,self.y_test,batch_size=128)
+        # print("訓練分數:",score)
+
+        # result = model.predict(self.x_test,batch_size=128)
+        # print("原始直:",np.squeeze(self.y_test[:20],axis=1))
+        # print("預測值:",np.argmax(result[:20],axis=1))
+
+        # # plot accuracy
+        # fig = plt.figure()
+        # fig.add_subplot(2,1,1)
+        # plt.plot(history.history['accuracy'], label='Training')
+        # plt.plot(history.history['val_accuracy'], label='Testing')
+        # plt.xlabel('Epoch')
+        # plt.ylabel('Accuracy')
+        # # plot loss
+        # fig.add_subplot(2,1,2)
+        # plt.plot(history.history['loss'], label='loss')
+        # plt.xlabel('Epoch')
+        # plt.ylabel('Loss')
+        # plt.show()
+        
+        # # save model
+        # import os
+        # savedir = "./model"
+        # model_name = "MyVGG16.h5"
+        # if not os.path.isdir(savedir):
+        #     os.makedirs(savedir)
+        # model_path = os.path.join(savedir, model_name)
+        # model.save(model_path)
+
     def Predict(self):
         self.model = tf.keras.models.load_model('./model/MyVGG16.h5')
         data = np.reshape(self.x_test[int(self.ui.lineEdit_15.text())],(1,32,32,3))
         result = self.model.predict(data,batch_size=128)
-        print(result)
-        print("原始直:",self.y_test[int(self.ui.lineEdit_15.text())])
-        print("預測值:",np.argmax(result,axis=1))
+
+        # print("原始直:",self.y_test[int(self.ui.lineEdit_15.text())])
+        # print("預測值:",np.argmax(result,axis=1))
+
+        # Show Predict result
+        x = np.arange(len(self.label))
+        plt.bar(x, result[0])
+        plt.xticks(x, self.label)
+        plt.xlabel('classification')
+        plt.ylabel('probability')
+        plt.title('Predict')
+        plt.show()
+        # Show test image
+        plt.figure()
+        plt.title(self.label[self.y_test[int(self.ui.lineEdit_15.text())].astype(int)][0])
+        plt.imshow(self.x_test[int(self.ui.lineEdit_15.text())])
+        plt.axis('off')
+        plt.show()
 
 
   
-
     def open_file(self):
         filename, filetype = QFileDialog.getOpenFileName(self,"Open folder","./")
         return filename
+    # ScrollBar value update
     def update(self,x):
         self.value = x
 
